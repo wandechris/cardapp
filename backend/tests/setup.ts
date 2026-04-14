@@ -46,9 +46,15 @@ export let POSTED_TX_ID_2 = '';       // separate fixture for the 403 customer-a
 export let PENDING_TX_ID = '';
 export let REVERSED_TX_ID = '';
 
+function utcDatetime(daysBack: number, hour: number, minute: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - daysBack);
+  d.setHours(hour, minute, 0, 0);
+  return d.toISOString();
+}
+
 export async function seedTestDb() {
   const now = new Date().toISOString();
-  const today = now.split('T')[0];
 
   POSTED_TX_ID = uuidv4();
   POSTED_TX_ID_2 = uuidv4();
@@ -89,7 +95,7 @@ export async function seedTestDb() {
         merchant: 'Amazon',
         amount: 49.99,
         status: 'POSTED',
-        transaction_date: today,
+        transaction_date: utcDatetime(0, 10, 0),
         created_at: now,
         updated_at: now,
       },
@@ -99,7 +105,7 @@ export async function seedTestDb() {
         merchant: 'Netflix',
         amount: 15.99,
         status: 'PENDING',
-        transaction_date: today,
+        transaction_date: utcDatetime(0, 10, 0),
         created_at: now,
         updated_at: now,
       },
@@ -109,7 +115,7 @@ export async function seedTestDb() {
         merchant: 'Uber',
         amount: 22.40,
         status: 'REVERSED',
-        transaction_date: today,
+        transaction_date: utcDatetime(0, 10, 0),
         created_at: now,
         updated_at: now,
       },
@@ -119,7 +125,7 @@ export async function seedTestDb() {
         merchant: 'Apple Store',
         amount: 99.99,
         status: 'POSTED',
-        transaction_date: today,
+        transaction_date: utcDatetime(0, 10, 0),
         created_at: now,
         updated_at: now,
       },
@@ -129,7 +135,7 @@ export async function seedTestDb() {
         merchant: 'Walmart',
         amount: 83.20,
         status: 'POSTED',
-        transaction_date: today,
+        transaction_date: utcDatetime(0, 10, 0),
         created_at: now,
         updated_at: now,
       },

@@ -16,8 +16,8 @@ router.get('/transactions', (req: AuthRequest, res: Response): void => {
 
   if (status) txs = txs.filter((t) => t.status === status);
   if (customer_id) txs = txs.filter((t) => t.customer_id === customer_id);
-  if (from) txs = txs.filter((t) => t.transaction_date >= from);
-  if (to) txs = txs.filter((t) => t.transaction_date <= to);
+  if (from) txs = txs.filter((t) => new Date(t.transaction_date).toLocaleDateString('en-CA') >= from);
+  if (to) txs = txs.filter((t) => new Date(t.transaction_date).toLocaleDateString('en-CA') <= to);
 
   txs.sort((a, b) => b.transaction_date.localeCompare(a.transaction_date));
 

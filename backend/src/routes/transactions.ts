@@ -13,8 +13,8 @@ router.get('/', authenticate, (req: AuthRequest, res: Response): void => {
   let txs = db.transactions.filter((t) => t.customer_id === req.user!.sub);
 
   if (status) txs = txs.filter((t) => t.status === status);
-  if (from) txs = txs.filter((t) => t.transaction_date >= from);
-  if (to) txs = txs.filter((t) => t.transaction_date <= to);
+  if (from) txs = txs.filter((t) => new Date(t.transaction_date).toLocaleDateString('en-CA') >= from);
+  if (to) txs = txs.filter((t) => new Date(t.transaction_date).toLocaleDateString('en-CA') <= to);
 
   txs.sort((a, b) => b.transaction_date.localeCompare(a.transaction_date));
 
@@ -44,7 +44,7 @@ router.post('/', authenticate, (req: AuthRequest, res: Response): void => {
     merchant,
     amount: Number(amount),
     status: 'PENDING' as const,
-    transaction_date: now.split('T')[0],
+    transaction_date: now,
     created_at: now,
     updated_at: now,
   };

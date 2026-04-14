@@ -194,7 +194,8 @@ export function AdminDashboard() {
                   {transactions.map(tx => (
                     <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
-                        {new Date(tx.transaction_date).toLocaleDateString('en-CA')}
+                        <div>{new Date(tx.transaction_date).toLocaleDateString('en-CA')}</div>
+                        <div className="text-xs text-gray-400">{new Date(tx.transaction_date).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}</div>
                       </td>
                       <td className="px-4 sm:px-6 py-4 text-gray-600">{tx.customer_name}</td>
                       <td className="px-4 sm:px-6 py-4 text-gray-900 font-medium">{tx.merchant}</td>
