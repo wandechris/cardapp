@@ -22,7 +22,7 @@ A fullstack application that lets customers view and create transactions, and le
 ### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/wandechris/cardapp.git
 cd cardapp
 ```
 
