@@ -41,5 +41,6 @@ export function readDb(): Db {
 }
 
 export function writeDb(data: Db): void {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
 }
