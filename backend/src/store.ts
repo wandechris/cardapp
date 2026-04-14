@@ -33,7 +33,11 @@ export function readDb(): Db {
     return { users: [], transactions: [] };
   }
   const raw = fs.readFileSync(DB_PATH, 'utf-8');
-  return JSON.parse(raw) as Db;
+  try {
+    return JSON.parse(raw) as Db;
+  } catch {
+    throw new Error(`Database file is corrupted and cannot be parsed: ${DB_PATH}`);
+  }
 }
 
 export function writeDb(data: Db): void {

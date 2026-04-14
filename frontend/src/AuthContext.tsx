@@ -4,7 +4,7 @@ import type { User } from './types';
 interface AuthContextValue {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string): Promise<User> {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,8 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await res.json();
+    const decoded = decodeToken(data.token);
+    if (!decoded) throw new Error('Invalid token received from server');
     setToken(data.token);
-    setUser(decodeToken(data.token));
+    setUser(decoded);
+    return decoded;
   }
 
   function logout() {

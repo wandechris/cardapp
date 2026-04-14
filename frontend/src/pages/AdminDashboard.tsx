@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { fetchAdminTransactions, fetchAdminUsers, reverseTransaction } from '../api';
 import type { AdminTransaction, User } from '../types';
@@ -29,8 +29,21 @@ export function AdminDashboard() {
 
   const [status, setStatus] = useState('');
   const [customerId, setCustomerId] = useState('');
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const customerRef = useRef<HTMLDivElement>(null);
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (customerRef.current && !customerRef.current.contains(e.target as Node)) {
+        setCustomerOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,17 +130,60 @@ export function AdminDashboard() {
               ))}
             </div>
 
-            {/* Customer dropdown */}
-            <select
-              value={customerId}
-              onChange={e => setCustomerId(e.target.value)}
-              className="sm:ml-auto px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="">All customers</option>
-              {customers.map(c => (
-                <option key={c.id} value={c.id}>{c.full_name}</option>
-              ))}
-            </select>
+            {/* Customer combobox */}
+            <div ref={customerRef} className="relative sm:ml-auto">
+              <div className="flex items-center border border-gray-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500">
+                <input
+                  type="text"
+                  value={customerSearch}
+                  onChange={e => { setCustomerSearch(e.target.value); setCustomerOpen(true); }}
+                  onFocus={() => setCustomerOpen(true)}
+                  onKeyDown={e => { if (e.key === 'Escape') { setCustomerOpen(false); setCustomerSearch(''); } }}
+                  placeholder={customerId ? (customers.find(c => c.id === customerId)?.full_name ?? 'All customers') : 'All customers'}
+                  className="px-3 py-1.5 text-xs bg-transparent outline-none w-44"
+                />
+                {customerId && (
+                  <button
+                    type="button"
+                    onClick={() => { setCustomerId(''); setCustomerSearch(''); }}
+                    className="pr-2 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              {customerOpen && (
+                <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto text-xs">
+                  <li>
+                    <button
+                      type="button"
+                      onMouseDown={() => { setCustomerId(''); setCustomerSearch(''); setCustomerOpen(false); }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-gray-500"
+                    >
+                      All customers
+                    </button>
+                  </li>
+                  {customers
+                    .filter(c => c.full_name.toLowerCase().includes(customerSearch.toLowerCase()))
+                    .map(c => (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          onMouseDown={() => { setCustomerId(c.id); setCustomerSearch(''); setCustomerOpen(false); }}
+                          className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${customerId === c.id ? 'font-medium text-blue-600' : 'text-gray-700'}`}
+                        >
+                          {c.full_name}
+                        </button>
+                      </li>
+                    ))
+                  }
+                  {customers.filter(c => c.full_name.toLowerCase().includes(customerSearch.toLowerCase())).length === 0 && (
+                    <li className="px-3 py-2 text-gray-400">No matches</li>
+                  )}
+                </ul>
+              )}
+            </div>
           </div>
 
           {/* Date range */}

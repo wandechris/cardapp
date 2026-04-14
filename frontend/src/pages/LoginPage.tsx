@@ -15,8 +15,7 @@ export function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
-      const role = JSON.parse(atob(localStorage.getItem('cc_token')!.split('.')[1])).role;
+      const { role } = await login(email, password);
       navigate(role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

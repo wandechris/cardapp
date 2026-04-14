@@ -9,6 +9,12 @@ import {
   REVERSED_TX_ID,
 } from './setup';
 
+function localDate(daysOffset: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+}
+
 const app = buildApp();
 
 let adminToken: string;
@@ -76,6 +82,31 @@ describe('GET /api/admin/transactions', () => {
     res.body.forEach((tx: { customer_id: string }) => {
       expect(tx.customer_id).toBe(sarah.id);
     });
+  });
+
+  it('filters by from date — includes transactions on or after the date', async () => {
+    const today = localDate(0);
+    const res = await request(app)
+      .get(`/api/admin/transactions?from=${today}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    res.body.forEach((tx: { transaction_date: string }) => {
+      const txDate = new Date(tx.transaction_date).toLocaleDateString('en-CA');
+      expect(txDate >= today).toBe(true);
+    });
+  });
+
+  it('filters by to date — excludes transactions after the date', async () => {
+    const yesterday = localDate(-1);
+    const res = await request(app)
+      .get(`/api/admin/transactions?to=${yesterday}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    // All seed fixtures are from today, so none should appear
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(0);
   });
 
   it('returns 403 for a customer', async () => {

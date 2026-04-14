@@ -1,6 +1,12 @@
 import request from 'supertest';
 import { buildApp, seedTestDb, cleanTestDb, SARAH_ID } from './setup';
 
+function localDate(daysOffset: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+}
+
 const app = buildApp();
 
 let customerToken: string;
@@ -57,6 +63,31 @@ describe('GET /api/transactions', () => {
     });
   });
 
+  it('filters by from date — includes transactions on or after the date', async () => {
+    const today = localDate(0);
+    const res = await request(app)
+      .get(`/api/transactions?from=${today}`)
+      .set('Authorization', `Bearer ${customerToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    res.body.forEach((tx: { transaction_date: string }) => {
+      const txDate = new Date(tx.transaction_date).toLocaleDateString('en-CA');
+      expect(txDate >= today).toBe(true);
+    });
+  });
+
+  it('filters by to date — excludes transactions after the date', async () => {
+    const yesterday = localDate(-1);
+    const res = await request(app)
+      .get(`/api/transactions?to=${yesterday}`)
+      .set('Authorization', `Bearer ${customerToken}`);
+
+    // All seed fixtures are from today, so none should appear
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(0);
+  });
+
   it('returns 401 without a token', async () => {
     const res = await request(app).get('/api/transactions');
     expect(res.status).toBe(401);
@@ -82,6 +113,8 @@ describe('POST /api/transactions', () => {
     expect(res.body.amount).toBe(7.50);
     expect(res.body.status).toBe('PENDING');
     expect(res.body.customer_id).toBe(SARAH_ID);
+    // transaction_date must be a full UTC ISO datetime, not a date-only string
+    expect(res.body.transaction_date).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*Z$/);
   });
 
   it('returns 403 when an admin tries to create a transaction', async () => {
