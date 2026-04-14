@@ -23,7 +23,7 @@ A fullstack application that lets customers view and create transactions, and le
 
 ```bash
 git clone <repo-url>
-cd assesment
+cd cardapp
 ```
 
 ### 2. Backend
